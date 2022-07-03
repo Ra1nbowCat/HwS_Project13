@@ -12,6 +12,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
     @IBOutlet var intensity: UISlider!
     @IBOutlet var imageView: UIImageView!
+    @IBOutlet var filterButton: UIButton!
     
     var currentImage: UIImage!
     
@@ -33,7 +34,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let picker = UIImagePickerController()
         picker.allowsEditing = true
         picker.delegate = self
-        present(picker, animated: true )
+        present(picker, animated: true)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -72,12 +73,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         let beginImage = CIImage(image: currentImage)
         currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
+        filterButton.setTitle(actionTitle, for: .normal)
         
         applyProcessing()
     }
     
     @IBAction func save(_ sender: Any) {
-        guard let image = imageView.image else {return}
+        guard let image = imageView.image else {
+            showError()
+            return
+        }
         UIImageWriteToSavedPhotosAlbum(image, self, #selector(imageSaver(_:didFinishSavingWithError:contextInfo:)), nil)
     }
     
@@ -110,6 +115,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
             let processedImage = UIImage(cgImage: cgImage)
             imageView.image = processedImage
+        }
+    }
+    
+    func showError() {
+        if imageView.image == nil {
+            let ac = UIAlertController(title: "Error!", message: "There is no image selected", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
         }
     }
     
